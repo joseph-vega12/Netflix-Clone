@@ -4,6 +4,7 @@
 }
 
 .row__posters {
+  cursor: pointer;
   display: flex;
   overflow-y: hidden;
   overflow-x: scroll;
