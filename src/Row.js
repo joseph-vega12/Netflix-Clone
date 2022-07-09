@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import axios from "./axios";
 import "./Row.css";
 import YouTube from "react-youtube";
-import movieTrailer from "movie-trailer";
 
 const base_url = "https://image.tmdb.org/t/p/original/";
+const base_url_movie = "https://api.themoviedb.org/3/movie/";
+const API_KEY = process.env.REACT_APP_API_KEY;
 
 function Row({ title, fetchUrl, isLargeRow }) {
   const [movies, setMovies] = useState([]);
   const [trailerUrl, setTrailerUrl] = useState("");
-
   useEffect(() => {
     async function fetchData() {
       const request = await axios.get(fetchUrl);
@@ -28,16 +28,23 @@ function Row({ title, fetchUrl, isLargeRow }) {
   };
 
   const handleClick = (movie) => {
-    console.log(movie);
     if (trailerUrl) {
       setTrailerUrl("");
     } else {
-      movieTrailer(movie?.title || movie?.orignal_name || "")
-        .then((url) => {
-          const urlParams = new URLSearchParams(new URL(url).search);
-          setTrailerUrl(urlParams.get("v"));
+      axios
+        .get(
+          `${base_url_movie}${movie.id}?api_key=${API_KEY}&append_to_response=videos`
+        )
+        .then((movie) => {
+          movie.data.videos.results
+            .filter((trailers) => trailers.name === "Official Trailer")
+            .map((result) => {
+              setTrailerUrl(result.key);
+            });
         })
-        .catch((err) => console.log(err));
+        .catch((error) => {
+          throw error;
+        });
     }
   };
 
