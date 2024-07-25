@@ -4,7 +4,8 @@
 }
 
 .row__posters {
-  cursor: pointer;
+  cursor: grab;
+  user-select: none;
   display: flex;
   overflow-y: hidden;
   overflow-x: scroll;
@@ -25,6 +26,10 @@
 
 .row__poster:hover {
   transform: scale(1.08);
+}
+
+.row__posters:active {
+  cursor: grabbing;
 }
 
 .row__posterLarge {

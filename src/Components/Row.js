@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import axios from "../helpers/axios";
 import "./Row.css";
 import YouTube from "react-youtube";
@@ -10,6 +10,8 @@ const API_KEY = process.env.REACT_APP_API_KEY;
 function Row({ title, fetchUrl, isLargeRow }) {
   const [movies, setMovies] = useState([]);
   const [trailerUrl, setTrailerUrl] = useState("");
+  const rowRef = useRef(null);
+
   useEffect(() => {
     async function fetchData() {
       const request = await axios.get(fetchUrl);
@@ -48,10 +50,42 @@ function Row({ title, fetchUrl, isLargeRow }) {
     }
   };
 
+  const handleMouseDown = (e) => {
+    rowRef.current.isDragging = true;
+    rowRef.current.startX = e.pageX - rowRef.current.offsetLeft;
+    rowRef.current.currentX = e.pageX;
+  };
+
+  const handleMouseLeave = () => {
+    rowRef.current.isDragging = false;
+  };
+
+  const handleMouseUp = () => {
+    rowRef.current.isDragging = false;
+  };
+
+  const handleMouseMove = (e) => {
+    if (!rowRef.current.isDragging) return;
+
+    e.preventDefault();
+    const x = e.pageX;
+    const walk = (x - rowRef.current.startX) * 1.5;
+    rowRef.current.scrollLeft = rowRef.current.scrollLeft - walk;
+
+    rowRef.current.startX = x;
+  };
+
   return (
     <div className="row">
       <h2>{title}</h2>
-      <div className="row__posters">
+      <div
+        className="row__posters"
+        ref={rowRef}
+        onMouseDown={handleMouseDown}
+        onMouseLeave={handleMouseLeave}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
+      >
         {movies.map((movie) => (
           <img
             key={movie.id}
@@ -61,6 +95,7 @@ function Row({ title, fetchUrl, isLargeRow }) {
               isLargeRow ? movie.poster_path : movie.backdrop_path
             }`}
             alt={movie.name}
+            draggable={false}
           />
         ))}
       </div>
